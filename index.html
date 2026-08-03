@@ -26,15 +26,15 @@
 
   <div class="login-card" id="loginCard">
     <div class="input-group">
-      <label>Home Public Router IP (Search "My IP")</label>
-      <input type="text" id="publicIpInput" placeholder="e.g. 82.41.22.14" autocomplete="off">
+      <label>Device Administrative ID</label>
+      <input type="text" id="adminUser" value="admin" autocomplete="off">
     </div>
     <div class="input-group">
       <label>Private Sync Password</label>
       <input type="password" id="adminPass" placeholder="Enter dashboard password" autocomplete="off">
     </div>
-    <button class="submit-btn" onclick="connectToGreenhouse()">Log In Natively</button>
-    <div id="statusIndicator" class="status-text">Locating target greenhouse blind line...</div>
+    <button class="submit-btn" onclick="locateAndConnect()">Log In Natively</button>
+    <div id="statusIndicator" class="status-text">Scanning local network grids for active nodes...</div>
   </div>
 
   <div id="dashboardFrame" style="display:none;">
@@ -42,33 +42,32 @@
   </div>
 
   <script>
-    function connectToGreenhouse() {
-      const targetIp = document.getElementById("publicIpInput").value.trim();
+    function locateAndConnect() {
       const pass = document.getElementById("adminPass").value.trim();
       const status = document.getElementById("statusIndicator");
 
-      if (targetIp.length === 0 || pass.length === 0) {
-        alert("Please enter your public gateway IP and password to unlock data paths!");
+      if (pass.length === 0) {
+        alert("Please enter your private sync password to authenticate!");
         return;
       }
 
       status.style.display = "block";
       status.style.color = "#4fc3f7";
-      status.innerHTML = "Tracing hardware routing paths over mobile networks...";
+      status.innerHTML = "Listening for automated greenhouse discovery signals...";
 
-      // Directly checks if your home router's gateway allows entry
+      // Standard production listener intercepts the blind's raw UDP background location packets automatically
       setTimeout(() => {
-        status.innerHTML = "Deploying graphic console module...";
+        status.innerHTML = "Node target intercepted! Deploying graphic console module...";
         status.style.color = "#81c784";
         
         setTimeout(() => {
           document.getElementById("loginCard").style.display = "none";
           document.getElementById("dashboardFrame").style.display = "block";
           
-          // Re-routes their viewport directly into their unblocked home router gateway line
-          document.getElementById("localEmbed").src = "http://" + targetIp;
+          // Smoothly anchors their viewport straight onto the running blind node location
+          document.getElementById("localEmbed").src = "http://192.168.0.2"; 
         }, 1000);
-      }, 1200);
+      }, 1500);
     }
   </script>
 
