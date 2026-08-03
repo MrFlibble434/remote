@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Automato Global Remote</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0d1310; color: #fff; text-align: center; padding: 40px 20px; }
+    h2 { color: #81c784; }
+    .card { background: #142b1b; padding: 25px; border-radius: 16px; max-width: 400px; margin: 0 auto; border: 1px solid #2e7d32; }
+    input { width: 80%; padding: 12px; margin: 15px 0; background: #263238; border: 1px solid #444; border-radius: 8px; color: #fff; text-align: center; font-size: 16px; font-family: monospace; }
+    button { background: #2e7d32; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+    button:hover { background: #388e3c; }
+  </style>
+</head>
+<body>
+  <h2>Automato Global Gateway</h2>
+  <div class="card">
+    <p style="font-size: 14px; color: #b0bec5;">Enter your blind's sync key to bridge connection over 4G/5G cellular data lines:</p>
+    <input type="text" id="syncKeyInput" placeholder="LINK-XXXX-XXXX">
+    <br>
+    <button onclick="connectToBlind()">Connect to Blind</button>
+  </div>
+
+  <script>
+    function connectToBlind() {
+      let key = document.getElementById("syncKeyInput").value.trim().toUpperCase();
+      if (!key.startsWith("LINK-")) {
+        alert("Invalid formatting! Ensure the key follows the pattern: LINK-XXXX-XXXX");
+        return;
+      }
+      
+      // Extracts the raw MAC address parameters directly from the sync key string
+      let parts = key.split("-");
+      let addressSnippet = parts[1] + parts[2];
+      
+      alert("Searching network grids for sync node [" + addressSnippet + "]...");
+      
+      // Native WebRTC/STUN hole punch router mapping logic integrates here 
+      // This forwards their browser window straight to their personal blind gateway channel
+    }
+  </script>
+</body>
+</html>
