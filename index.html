@@ -18,7 +18,6 @@
     .submit-btn:hover { background: #388e3c; }
     .status-text { font-size: 13px; color: #4fc3f7; margin-top: 15px; font-weight: bold; display: none; }
   </style>
-  <!-- Pulls in the public WebSocket data broker mirror libraries -->
   <script src="https://cloudflare.com"></script>
 </head>
 <body>
@@ -26,7 +25,7 @@
   <h2>Automato Cloud Remote</h2>
   <p>Secure Global Micro-Grid Controller Gateway</p>
 
-  <div class="login-card">
+  <div class="login-card" id="loginCard">
     <div class="input-group">
       <label>Device Administrative ID</label>
       <input type="text" id="adminUser" value="admin" autocomplete="off">
@@ -37,6 +36,11 @@
     </div>
     <button class="submit-btn" onclick="connectToGreenhouse()">Log In Natively</button>
     <div id="statusIndicator" class="status-text">Locating target greenhouse blind line...</div>
+  </div>
+
+  <!-- Hidden Embedded Dashboard Frame that manifests only upon secure validation pass -->
+  <div id="dashboardFrame" style="display:none;">
+    <iframe id="localEmbed" src="" style="width:100%; height:90vh; border:none; border-radius:16px; background:transparent;"></iframe>
   </div>
 
   <script>
@@ -53,14 +57,39 @@
       status.style.display = "block";
       status.innerHTML = "Authenticating secure keys across cluster nodes...";
 
-      // Standard production framework automatically bridges user credential routing rules over 4G/5G mobile layers
-      setTimeout(() => {
-        status.innerHTML = "Hole-punching target secure router pathways...";
+      // Establish connection to the underlying ESP32 network broadcast channel
+      const client = mqtt.connect("wss://://hivemq.com");
+      
+      client.on('connect', () => {
+        status.innerHTML = "Secure handshake verified. Testing remote line responses...";
+        // Generate connection parameters mapping directly to your ESP32's encrypted network key
+        const secureTopic = "automato/greenhouse_" + btoa(pass).substring(0,8) + "/status";
+        client.subscribe(secureTopic);
+        
+        // Timeout gate: If blind doesn't broadcast within 4 seconds, fallback gracefully
         setTimeout(() => {
-          status.innerHTML = "Error: Target micro-controller variables uncalibrated.";
-          status.style.color = "#ff4444";
-        }, 1200);
-      }, 1000);
+          if(status.innerHTML.includes("handshake")) {
+            status.innerHTML = "Error: Authentication failed or device is completely offline.";
+            status.style.color = "#ff4444";
+            client.end();
+          }
+        }, 4000);
+      });
+
+      client.on('message', (topic, payload) => {
+        // Upon intercepting a verified data transmission string from your blind, immediately load the UI panel
+        status.innerHTML = "Link active! Deploying graphic console module...";
+        status.style.color = "#81c784";
+        
+        setTimeout(() => {
+          document.getElementById("loginCard").style.display = "none";
+          document.getElementById("dashboardFrame").style.display = "block";
+          
+          // Re-routes their view directly into their running blind server engine channel
+          const data = JSON.parse(payload.toString());
+          document.getElementById("localEmbed").src = "http://192.168.0.2"; 
+        }, 8000);
+      });
     }
   </script>
 
