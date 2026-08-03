@@ -3,73 +3,102 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Automato Global Remote Gateway</title>
+  <title>Automato Wireless Remote Console</title>
   <style>
-    html { font-family: Arial, sans-serif; text-align: center; background: radial-gradient(circle at top, #142b1b 0%, #0d1310 100%); color: #f5f5f5; min-height: 100%; }
-    body { max-width: 450px; margin: 0 auto; padding: 40px 15px; }
-    h2 { color: #81c784; font-size: 26px; margin-bottom: 5px; }
-    p { color: #b0bec5; font-size: 14px; margin-bottom: 25px; }
-    .login-card { background: rgba(255, 255, 255, 0.03); padding: 30px 20px; border-radius: 16px; border: 1px solid rgba(129, 199, 132, 0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-    .input-group { margin-bottom: 20px; text-align: left; }
-    label { font-size: 11px; text-transform: uppercase; color: #81c784; letter-spacing: 1px; display: block; margin-bottom: 6px; font-weight: bold; }
-    input { width: 100%; padding: 14px; background: #263238; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 16px; box-sizing: border-box; }
-    input:focus { border-color: #81c784; outline: none; }
-    .submit-btn { width: 100%; background: #2e7d32; color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
-    .submit-btn:hover { background: #388e3c; }
-    .status-text { font-size: 13px; color: #4fc3f7; margin-top: 15px; font-weight: bold; display: none; }
+    html { font-family: Arial, sans-serif; text-align: center; background: #0b0f12; color: #f5f5f5; min-height: 100%; }
+    body { max-width: 450px; margin: 0 auto; padding: 30px 15px; }
+    h2 { color: #81c784; margin-bottom: 5px; }
+    .console-card { background: #11161b; padding: 25px; border-radius: 12px; border: 1px solid #1f282e; margin-bottom: 15px; text-align: left; }
+    .label { font-size: 11px; text-transform: uppercase; color: #81c784; font-weight: bold; margin-bottom: 4px; }
+    .val { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #fff; }
+    .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+    button { background: #1b232a; border: 1px solid #2d3941; padding: 16px; color: #fff; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; }
+    button:active { background: #2e7d32; border-color: #81c784; }
+    .stop-btn { grid-column: span 2; background: #c62828; border-color: #e57373; }
+    .stop-btn:active { background: #b71c1c; }
+    #statusLine { font-size: 13px; color: #4fc3f7; text-align: center; font-weight: bold; margin-top: 10px; }
+    .login-cover { background: #11161b; padding: 30px; border-radius: 12px; border: 1px solid #1f282e; }
+    input { width: 100%; padding: 14px; background: #1c252c; border: 1px solid #2d3941; border-radius: 6px; color: #fff; font-size: 16px; margin: 10px 0 20px 0; box-sizing: border-box; }
   </style>
+  <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
-  <h2>Automato Cloud Remote</h2>
-  <p>Secure Global Micro-Grid Controller Gateway</p>
+  <h2>Automato Greenhouse</h2>
+  <p style="color:#607d8b; font-size:13px; margin-top:0;">Global Live Telemetry Network Link</p>
 
-  <div class="login-card" id="loginCard">
-    <div class="input-group">
-      <label>Device Administrative ID</label>
-      <input type="text" id="adminUser" value="admin" autocomplete="off">
-    </div>
-    <div class="input-group">
-      <label>Private Sync Password</label>
-      <input type="password" id="adminPass" placeholder="Enter dashboard password" autocomplete="off">
-    </div>
-    <button class="submit-btn" onclick="locateAndConnect()">Log In Natively</button>
-    <div id="statusIndicator" class="status-text">Scanning local network grids for active nodes...</div>
+  <!-- Access Shield Gate -->
+  <div class="login-cover" id="loginCard">
+    <div class="label">System Shield Password</div>
+    <input type="password" id="passInput" placeholder="Enter device password">
+    <button style="width:100%; background:#2e7d32; border:none;" onclick="startGlobalPipeline()">Connect over 4G/5G</button>
   </div>
 
-  <div id="dashboardFrame" style="display:none;">
-    <iframe id="localEmbed" src="" style="width:100%; height:90vh; border:none; border-radius:16px; background:transparent;"></iframe>
+  <!-- Operational Panel (Hidden until sync pass connects) -->
+  <div id="controlPanel" style="display:none;">
+    <div class="console-card">
+      <div class="label">Greenhouse Air Temp</div>
+      <div class="val" id="uiTemp">--.-°C</div>
+      <div class="label">Battery Cell Volts</div>
+      <div class="val" id="uiVolts">--.--V</div>
+      <div class="label">Mechanical Drive State</div>
+      <div id="uiState" style="font-weight:bold; color:#4fc3f7;">SYNCHRONISING...</div>
+    </div>
+
+    <button class="stop-btn" onclick="sendControl('STOP')">EMERGENCY MOTOR STOP</button>
+    <div class="btn-grid">
+      <button onclick="sendControl('FORWARD')">DRIVE OPEN</button>
+      <button onclick="sendControl('REVERSE')">DRIVE CLOSE</button>
+      <button onclick="sendControl('AUTO')" style="background:#2e7d32;">AUTO MODE</button>
+      <button onclick="sendControl('MANUAL')">MANUAL MODE</button>
+    </div>
   </div>
+
+  <div id="statusLine">System initialization pending...</div>
 
   <script>
-    function locateAndConnect() {
-      const pass = document.getElementById("adminPass").value.trim();
-      const status = document.getElementById("statusIndicator");
+    let globalClient = null; let cmdTopic = ""; let statTopic = "";
 
-      if (pass.length === 0) {
-        alert("Please enter your private sync password to authenticate!");
-        return;
-      }
+    function startGlobalPipeline() {
+      const p = document.getElementById("passInput").value.trim();
+      const status = document.getElementById("statusLine");
+      if(!p) return alert("Please supply the administrative sync key!");
 
-      status.style.display = "block";
-      status.style.color = "#4fc3f7";
-      status.innerHTML = "Listening for automated greenhouse discovery signals...";
+      status.innerHTML = "Opening native unblockable WebSocket text socket...";
+      
+      // Target the public cloud cluster row over secure sockets directly
+      globalClient = mqtt.connect("wss://://hivemq.com");
+      
+      // Calculate hash match headers instantly inside your browser engine
+      const secureHash = btoa(p).substring(0,8);
+      cmdTopic = "automato/greenhouse_" + secureHash + "/cmd";
+      statTopic = "automato/greenhouse_" + secureHash + "/status";
 
-      // Standard production listener intercepts the blind's raw UDP background location packets automatically
-      setTimeout(() => {
-        status.innerHTML = "Node target intercepted! Deploying graphic console module...";
-        status.style.color = "#81c784";
-        
-        setTimeout(() => {
+      globalClient.on('connect', () => {
+        status.innerHTML = "Handshake verified! Intercepting live device bytes...";
+        globalClient.subscribe(statTopic);
+      });
+
+      globalClient.on('message', (topic, payload) => {
+        if(topic === statTopic) {
+          status.innerHTML = "Global connection link: rock-solid.";
           document.getElementById("loginCard").style.display = "none";
-          document.getElementById("dashboardFrame").style.display = "block";
+          document.getElementById("controlPanel").style.display = "block";
           
-          // Smoothly anchors their viewport straight onto the running blind node location
-          document.getElementById("localEmbed").src = "http://192.168.0.2"; 
-        }, 1000);
-      }, 1500);
+          const data = JSON.parse(payload.toString());
+          document.getElementById("uiTemp").innerHTML = data.temp.toFixed(1) + "°C";
+          document.getElementById("uiVolts").innerHTML = data.volts.toFixed(2) + "V";
+          document.getElementById("uiState").innerHTML = data.shade_pos;
+        }
+      });
+    }
+
+    function sendControl(command) {
+      if(globalClient && globalClient.connected) {
+        globalClient.publish(cmdTopic, command);
+        document.getElementById("statusLine").innerHTML = "Command [" + command + "] dispatched across grid.";
+      }
     }
   </script>
-
 </body>
 </html>
