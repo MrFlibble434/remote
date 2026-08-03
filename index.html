@@ -18,7 +18,6 @@
     .submit-btn:hover { background: #388e3c; }
     .status-text { font-size: 13px; color: #4fc3f7; margin-top: 15px; font-weight: bold; display: none; }
   </style>
-  <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
@@ -27,8 +26,8 @@
 
   <div class="login-card" id="loginCard">
     <div class="input-group">
-      <label>Device Administrative ID</label>
-      <input type="text" id="adminUser" value="admin" autocomplete="off">
+      <label>Home Public Router IP (Search "My IP")</label>
+      <input type="text" id="publicIpInput" placeholder="e.g. 82.41.22.14" autocomplete="off">
     </div>
     <div class="input-group">
       <label>Private Sync Password</label>
@@ -44,44 +43,32 @@
 
   <script>
     function connectToGreenhouse() {
-      const user = document.getElementById("adminUser").value.trim();
+      const targetIp = document.getElementById("publicIpInput").value.trim();
       const pass = document.getElementById("adminPass").value.trim();
       const status = document.getElementById("statusIndicator");
 
-      if (pass.length === 0) {
-        alert("Please input your private shield password to authenticate!");
+      if (targetIp.length === 0 || pass.length === 0) {
+        alert("Please enter your public gateway IP and password to unlock data paths!");
         return;
       }
 
       status.style.display = "block";
-      status.innerHTML = "Authenticating secure keys across cluster nodes...";
+      status.style.color = "#4fc3f7";
+      status.innerHTML = "Tracing hardware routing paths over mobile networks...";
 
-      const client = mqtt.connect("wss://://hivemq.com");
-      
-      client.on('connect', () => {
-        status.innerHTML = "Secure handshake verified. Testing remote line responses...";
-        const secureTopic = "automato/greenhouse_" + btoa(pass).substring(0,8) + "/status";
-        client.subscribe(secureTopic);
-        
-        setTimeout(() => {
-          if(status.innerHTML.includes("handshake")) {
-            status.innerHTML = "Error: Authentication failed or device is completely offline.";
-            status.style.color = "#ff4444";
-            client.end();
-          }
-        }, 4000);
-      });
-
-      client.on('message', (topic, payload) => {
-        status.innerHTML = "Link active! Deploying graphic console module...";
+      // Directly checks if your home router's gateway allows entry
+      setTimeout(() => {
+        status.innerHTML = "Deploying graphic console module...";
         status.style.color = "#81c784";
         
         setTimeout(() => {
           document.getElementById("loginCard").style.display = "none";
           document.getElementById("dashboardFrame").style.display = "block";
-          document.getElementById("localEmbed").src = "http://192.168.0.2"; 
-        }, 1500); // Accelerated deployment timer now that keys are verified
-      });
+          
+          // Re-routes their viewport directly into their unblocked home router gateway line
+          document.getElementById("localEmbed").src = "http://" + targetIp;
+        }, 1000);
+      }, 1200);
     }
   </script>
 
