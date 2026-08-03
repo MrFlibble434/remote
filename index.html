@@ -38,7 +38,6 @@
     <div id="statusIndicator" class="status-text">Locating target greenhouse blind line...</div>
   </div>
 
-  <!-- Hidden Embedded Dashboard Frame that manifests only upon secure validation pass -->
   <div id="dashboardFrame" style="display:none;">
     <iframe id="localEmbed" src="" style="width:100%; height:90vh; border:none; border-radius:16px; background:transparent;"></iframe>
   </div>
@@ -57,16 +56,13 @@
       status.style.display = "block";
       status.innerHTML = "Authenticating secure keys across cluster nodes...";
 
-      // Establish connection to the underlying ESP32 network broadcast channel
       const client = mqtt.connect("wss://://hivemq.com");
       
       client.on('connect', () => {
         status.innerHTML = "Secure handshake verified. Testing remote line responses...";
-        // Generate connection parameters mapping directly to your ESP32's encrypted network key
         const secureTopic = "automato/greenhouse_" + btoa(pass).substring(0,8) + "/status";
         client.subscribe(secureTopic);
         
-        // Timeout gate: If blind doesn't broadcast within 4 seconds, fallback gracefully
         setTimeout(() => {
           if(status.innerHTML.includes("handshake")) {
             status.innerHTML = "Error: Authentication failed or device is completely offline.";
@@ -77,18 +73,14 @@
       });
 
       client.on('message', (topic, payload) => {
-        // Upon intercepting a verified data transmission string from your blind, immediately load the UI panel
         status.innerHTML = "Link active! Deploying graphic console module...";
         status.style.color = "#81c784";
         
         setTimeout(() => {
           document.getElementById("loginCard").style.display = "none";
           document.getElementById("dashboardFrame").style.display = "block";
-          
-          // Re-routes their view directly into their running blind server engine channel
-          const data = JSON.parse(payload.toString());
           document.getElementById("localEmbed").src = "http://192.168.0.2"; 
-        }, 8000);
+        }, 1500); // Accelerated deployment timer now that keys are verified
       });
     }
   </script>
